@@ -2,7 +2,8 @@
 import httplib2
 import datetime
 
-from apiclient.discovery import build
+from apiclient.discovery import build # Google API
+
 from oauth2client.file import Storage
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.tools import run_flow
@@ -74,12 +75,18 @@ class ObjectFromDict(object):
         try:
             _obj.attrs()
         except:
-            return _obj
+            if isinstance(_obj, CalendarInterface):
+                return None
+            else:
+                return _obj
         
         d = dict()
 
         for attr in _obj.attrs():
-            d[attr] = self.ToDict(_obj.__dict__[attr])
+            if not callable(_obj.__dict__[attr]):
+                item = self.ToDict(_obj.__dict__[attr])
+                if item != None:
+                    d[attr] = self.ToDict(item)
 
         return d
 
@@ -269,7 +276,6 @@ class Calendar(ObjectFromDict):
         return self.interface.service.events().delete(calendarId=self.id,
                                                eventId=event.id).execute()
 
-"""
     def Update(self, **options):
         '''Apply changes already made to Calendar attributes.
         Also, supply additional changes as keyword arguments.
@@ -279,7 +285,7 @@ class Calendar(ObjectFromDict):
         self.__dict__.update(options)
         return self.interface.service.calendars().update(calendarId=self.id,
                                                          body=self.ToDict()).execute()
-"""
+
 
 class Event(ObjectFromDict): 
     """Forms an Event object from a dict."""
